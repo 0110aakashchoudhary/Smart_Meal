@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Meal - Login</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="container auth-wrapper">
+      <header>
+        <div class="badge">✦ AI-Powered Mess System ✦</div>
+        <h1 class="gradient-text">Smart Meal</h1>
+        <p>Sign in to submit your daily meal status</p>
+      </header>
+
+      <div
+        class="card glass-card hover-pop"
+        style="max-width: 420px; margin: 0 auto"
+      >
+        <div class="auth-tabs">
+          <button
+            class="tab-btn active"
+            id="tabLogin"
+            onclick="switchTab('login')"
+          >
+            Sign In
+          </button>
+          <button
+            class="tab-btn"
+            id="tabRegister"
+            onclick="switchTab('register')"
+          >
+            Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input
+              type="text"
+              id="loginRoll"
+              placeholder="e.g. 241110106004"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-glow">Login to Portal</button>
+        </form>
+
+        <!-- Register Form -->
+        <form
+          id="registerForm"
+          style="display: none"
+          onsubmit="handleRegister(event)"
+        >
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="regName" placeholder="Your Name" required />
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input
+              type="text"
+              id="regRoll"
+              placeholder="Roll Number"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="regPassword"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-glow">Create Account</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(type) {
+        if (type === "login") {
+          document.getElementById("tabLogin").classList.add("active");
+          document.getElementById("tabRegister").classList.remove("active");
+          document.getElementById("loginForm").style.display = "block";
+          document.getElementById("registerForm").style.display = "none";
+        } else {
+          document.getElementById("tabRegister").classList.add("active");
+          document.getElementById("tabLogin").classList.remove("active");
+          document.getElementById("registerForm").style.display = "block";
+          document.getElementById("loginForm").style.display = "none";
+        }
+      }
+
+      async function handleRegister(e) {
+        e.preventDefault();
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: document.getElementById("regName").value,
+            roll_no: document.getElementById("regRoll").value,
+            password: document.getElementById("regPassword").value,
+          }),
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (res.ok) switchTab("login");
+      }
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roll_no: document.getElementById("loginRoll").value,
+            password: document.getElementById("loginPassword").value,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          window.location.href = "/student";
+        } else {
+          alert(data.message);
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Meal - AI System</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="badge">✦ AI-Powered & Student-Driven ✦</div>
+        <h1 class="gradient-text">Smart Meal</h1>
+        <p>
+          Real-time Attendance + ML Demand Prediction to Zero Out Food Wastage
+        </p>
+      </header>
+
+      <!-- TOP BAR: User Session Info -->
+      <div class="user-session-bar" id="sessionBar">
+        <span id="welcomeUser">Welcome, Guest</span>
+        <div>
+          <button id="authBtnModal" class="btn-sm">
+            Student Login / Register
+          </button>
+          <button
+            id="logoutBtn"
+            class="btn-sm btn-danger"
+            style="display: none"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- 1. STUDENT PORTAL -->
+        <div class="card hover-pop">
+          <h2>Student Meal Opt-in & Attendance</h2>
+          <form id="attendanceForm">
+            <div class="form-group">
+              <label for="attDate">Select Date</label>
+              <input type="date" id="attDate" required />
+            </div>
+
+            <div class="form-group">
+              <label for="attMeal">Meal Session</label>
+              <select id="attMeal" required>
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch" selected>Lunch</option>
+                <option value="Dinner">Dinner</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="attStatus">Will you be having this meal?</label>
+              <select id="attStatus" required>
+                <option value="Eating">Yes, I will eat</option>
+                <option value="Absent">No, Mark me Absent</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="attSpecial">Special Feast Choice?</label>
+              <select id="attSpecial">
+                <option value="0">Regular Menu</option>
+                <option value="1">Special Item (Paneer/Chicken)</option>
+              </select>
+            </div>
+
+            <button type="submit" id="btnSubmitAttendance" class="btn-glow">
+              Submit My Meal Status
+            </button>
+          </form>
+        </div>
+
+        <!-- 2. KITCHEN DEMAND PLANNER -->
+        <div class="card hover-pop">
+          <h2>Kitchen Cook Demand Planner</h2>
+          <form id="predictionForm">
+            <div class="form-group">
+              <label for="dayOfWeek">Day of Week</label>
+              <select id="dayOfWeek" required>
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+                <option value="5">Saturday</option>
+                <option value="6">Sunday</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="mealType">Meal Schedule</label>
+              <select id="mealType" required>
+                <option value="0">Breakfast</option>
+                <option value="1" selected>Lunch</option>
+                <option value="2">Dinner</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="specialItem">Special Feast Day?</label>
+              <select id="specialItem" required>
+                <option value="0">Regular Routine Food</option>
+                <option value="1">Special Menu</option>
+              </select>
+            </div>
+
+            <button type="submit" id="btnPredict" class="btn-glow">
+              Calculate Raw Material Plan
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 3. LIVE ESTIMATION RESULTS CARD -->
+      <div class="card hover-pop result-card" style="margin-bottom: 1.5rem">
+        <h2>Daily Kitchen Plan (AI + Student Attendance Combined)</h2>
+        <div class="stats-row">
+          <div class="stat-box hover-lift">
+            <span class="count text-cyan" id="aiCount">--</span>
+            <span class="label">AI Historical Baseline</span>
+          </div>
+          <div class="stat-box hover-lift">
+            <span class="count text-emerald" id="eatingCount">--</span>
+            <span class="label">Confirmed Coming</span>
+          </div>
+          <div class="stat-box hover-lift">
+            <span class="count text-rose" id="absentCount">--</span>
+            <span class="label">Confirmed Absent</span>
+          </div>
+          <div class="stat-box hover-lift final-highlight">
+            <span class="count text-amber" id="finalCount">--</span>
+            <span class="label">Target Food Prep Count</span>
+          </div>
+        </div>
+
+        <h3
+          style="
+            margin: 1.5rem 0 0.75rem 0;
+            font-size: 0.95rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+        >
+          Recommended Grocery Usage:
+        </h3>
+        <div class="ingredients-grid">
+          <div class="ing-item hover-lift">
+            <span class="val" id="riceVal">--</span>
+            <span class="name">Rice (kg)</span>
+          </div>
+          <div class="ing-item hover-lift">
+            <span class="val" id="dalVal">--</span>
+            <span class="name">Dal / Gravy (L)</span>
+          </div>
+          <div class="ing-item hover-lift">
+            <span class="val" id="rotiVal">--</span>
+            <span class="name">Roti Count</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. HISTORICAL ANALYTICS -->
+      <div class="card hover-pop chart-card">
+        <h2>Average Consumption Trends by Meal Session</h2>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+
+    <!-- MODAL POPUP FOR AUTH -->
+    <div class="modal" id="authModal">
+      <div class="modal-content glass-card">
+        <span class="close-btn" id="closeModal">&times;</span>
+        <div class="auth-tabs">
+          <button class="tab-btn active" id="tabLogin">Login</button>
+          <button class="tab-btn" id="tabRegister">Register</button>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input
+              type="text"
+              id="loginRoll"
+              placeholder="e.g. 21BCA102"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" required />
+          </div>
+          <button type="submit" class="btn-glow">Sign In</button>
+        </form>
+
+        <form id="registerForm" style="display: none">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="regName" placeholder="Your Name" required />
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" id="regRoll" placeholder="Roll No" required />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regPassword" required />
+          </div>
+          <button type="submit" class="btn-glow">Create Account</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+  </body>
+</html>

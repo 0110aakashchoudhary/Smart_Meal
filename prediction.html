@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Meal - AI Kitchen Demand Prediction</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="badge">✦ Step 3: Kitchen Demand Prediction ✦</div>
+        <h1 class="gradient-text">Smart Meal</h1>
+        <p>Live AI Food Requirement & Wastage Control Dashboard</p>
+      </header>
+
+      <div class="user-session-bar">
+        <span>Logged in: <strong>{{ session.get('user_name') }}</strong></span>
+        <div>
+          <a
+            href="/student"
+            class="btn-sm"
+            style="text-decoration: none; margin-right: 8px"
+            >← Mark Another Meal</a
+          >
+          <a
+            href="/logout"
+            class="btn-sm btn-danger"
+            style="text-decoration: none"
+            >Logout</a
+          >
+        </div>
+      </div>
+
+      <!-- 1. LIVE ESTIMATION RESULTS CARD -->
+      <div class="card hover-pop result-card" style="margin-bottom: 1.5rem">
+        <h2>Daily Kitchen Preparation Summary</h2>
+        <div class="stats-row">
+          <div class="stat-box hover-lift">
+            <span class="count text-cyan" id="aiCount">--</span>
+            <span class="label">AI Historical Baseline</span>
+          </div>
+          <div class="stat-box hover-lift">
+            <span class="count text-emerald" id="eatingCount">--</span>
+            <span class="label">Confirmed Coming</span>
+          </div>
+          <div class="stat-box hover-lift">
+            <span class="count text-rose" id="absentCount">--</span>
+            <span class="label">Confirmed Absent</span>
+          </div>
+          <div class="stat-box hover-lift final-highlight">
+            <span class="count text-amber" id="finalCount">--</span>
+            <span class="label">Target Cook Headcount</span>
+          </div>
+        </div>
+
+        <h3
+          style="
+            margin: 1.75rem 0 0.75rem 0;
+            font-size: 0.95rem;
+            color: var(--muted);
+            text-transform: uppercase;
+          "
+        >
+          Exact Raw Material Needed:
+        </h3>
+        <div class="ingredients-grid">
+          <div class="ing-item hover-lift">
+            <span class="val" id="riceVal">--</span>
+            <span class="name">Rice (kg)</span>
+          </div>
+          <div class="ing-item hover-lift">
+            <span class="val" id="dalVal">--</span>
+            <span class="name">Dal / Gravy (L)</span>
+          </div>
+          <div class="ing-item hover-lift">
+            <span class="val" id="rotiVal">--</span>
+            <span class="name">Roti Count</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. ANALYTICS CHART -->
+      <div class="card hover-pop chart-card">
+        <h2>Average Consumption Trends by Meal Session</h2>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const mealType = urlParams.get("meal") || "1";
+      const specialItem = urlParams.get("special") || "0";
+      const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday...
+
+      async function fetchPrediction() {
+        const res = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            day_of_week: dayOfWeek,
+            meal_type: parseInt(mealType),
+            special_item: parseInt(specialItem),
+          }),
+        });
+        const data = await res.json();
+
+        document.getElementById("aiCount").textContent = data.ai_prediction;
+        document.getElementById("eatingCount").textContent =
+          data.confirmed_eating;
+        document.getElementById("absentCount").textContent =
+          data.confirmed_absent;
+        document.getElementById("finalCount").textContent =
+          data.final_requirement_headcount;
+
+        document.getElementById("riceVal").textContent =
+          `${data.food_plan.rice_kg} kg`;
+        document.getElementById("dalVal").textContent =
+          `${data.food_plan.dal_ltr} L`;
+        document.getElementById("rotiVal").textContent =
+          `${data.food_plan.roti_pcs} pcs`;
+      }
+
+      async function loadChart() {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+        const averages = [0, 0, 0];
+        data.forEach(
+          (item) => (averages[item.meal_type] = Math.round(item.avg_students)),
+        );
+
+        const ctx = document.getElementById("trendChart").getContext("2d");
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["Breakfast", "Lunch", "Dinner"],
+            datasets: [
+              {
+                label: "Average Headcount",
+                data: averages,
+                backgroundColor: ["#38bdf8", "#818cf8", "#22c55e"],
+                borderRadius: 8,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: "#94a3b8" },
+                grid: { color: "#334155" },
+              },
+              x: { ticks: { color: "#94a3b8" }, grid: { display: false } },
+            },
+            plugins: { legend: { labels: { color: "#f8fafc" } } },
+          },
+        });
+      }
+
+      fetchPrediction();
+      loadChart();
+    </script>
+  </body>
+</html>

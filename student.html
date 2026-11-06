@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Meal - Attendance Entry</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="badge">✦ Step 2: Student Meal Entry ✦</div>
+        <h1 class="gradient-text">Smart Meal</h1>
+        <p>Mark your meal presence for today</p>
+      </header>
+
+      <div class="user-session-bar">
+        <span
+          >Logged in as:
+          <strong
+            >{{ session.get('user_name') }} ({{ session.get('roll_no')
+            }})</strong
+          ></span
+        >
+        <a
+          href="/logout"
+          class="btn-sm btn-danger"
+          style="text-decoration: none; display: inline-block"
+          >Logout</a
+        >
+      </div>
+
+      <div class="card hover-pop" style="max-width: 580px; margin: 0 auto">
+        <h2>Daily Meal Selection</h2>
+        <form id="attendanceForm" onsubmit="submitAttendance(event)">
+          <div class="form-group">
+            <label for="attDate">Date</label>
+            <input type="date" id="attDate" required />
+          </div>
+
+          <div class="form-group">
+            <label for="attMeal">Meal Schedule</label>
+            <select id="attMeal" required>
+              <option value="0">Breakfast</option>
+              <option value="1" selected>Lunch</option>
+              <option value="2">Dinner</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="attStatus">Will you have this meal?</label>
+            <select id="attStatus" required>
+              <option value="Eating">Yes, I will eat</option>
+              <option value="Absent">No, Mark me Absent</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="attSpecial">Special Dish Preference</label>
+            <select id="attSpecial">
+              <option value="0">Regular Routine Food</option>
+              <option value="1">Special Item (Paneer/Feast)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-glow" style="margin-top: 1.25rem">
+            Submit & View AI Kitchen Predictions →
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("attDate").value = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      async function submitAttendance(e) {
+        e.preventDefault();
+        const payload = {
+          meal_date: document.getElementById("attDate").value,
+          meal_type_idx: parseInt(document.getElementById("attMeal").value),
+          status: document.getElementById("attStatus").value,
+          special_opted: parseInt(document.getElementById("attSpecial").value),
+        };
+
+        const res = await fetch("/api/mark_attendance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          // Submit hote hi page 3 par redirect
+          window.location.href = `/prediction?meal=${payload.meal_type_idx}&special=${payload.special_opted}`;
+        } else {
+          const data = await res.json();
+          alert(data.message);
+        }
+      }
+    </script>
+  </body>
+</html>
